@@ -54,7 +54,7 @@ def upload_view(request):
         context = {
             "heatmap_url": f"/media/results/{result_folder.name}/heatmap_similaritas.png",
             "table_html": matrix.to_html(classes="table table-striped", float_format="%.2f"),
-            "download_url": f"/download/{output_zip.name}",
+            "download_url": f"/download/{result_folder.name}.zip",  # arahkan ke view download
         }
         return render(request, "checker/result.html", context)
 
@@ -62,8 +62,9 @@ def upload_view(request):
 
 
 def download_result_view(request, filename):
-    """View untuk mengunduh ZIP hasil analisis."""
+    """Fungsi untuk handle tombol download ZIP hasil."""
     file_path = Path("media/results") / filename
+    print("Mencari file:", file_path)  # untuk debug
     if not file_path.exists():
-        return FileResponse(status=404)
+        raise Http404("File hasil tidak ditemukan di server.")
     return FileResponse(open(file_path, "rb"), as_attachment=True, filename=file_path.name)
