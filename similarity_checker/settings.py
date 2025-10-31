@@ -24,9 +24,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "secret-key-untuk-local")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+# DEBUG = False
+# Tambahkan ini (biar Render bisa serve media)
+if os.getenv("RENDER"):  # kalau environment Render aktif
+    DEBUG = True  # aktifkan debug supaya Django serve media files
 
-ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["*", ".onrender.com"]
+# CSRF_TRUSTED_ORIGINS = ["https://*.onrender.com"]
 
 
 # Application definition
