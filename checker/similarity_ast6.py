@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import tkinter as tk
+# import tkinter as tk
 import re
 from tkinter import filedialog
 from openpyxl import Workbook
