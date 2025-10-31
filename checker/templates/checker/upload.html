@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload ZIP Kode Mahasiswa</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f8; }
+        .container {
+            width: 60%; margin: 60px auto; background: #fff; padding: 30px 40px;
+            border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;
+        }
+        input[type="file"] { margin: 20px 0; }
+        button {
+            background: #3498db; color: white; border: none;
+            padding: 10px 20px; border-radius: 6px; cursor: pointer;
+        }
+        button:hover { background: #2c80b4; }
+        .error {
+            background: #ffe0e0; border: 1px solid #e74c3c;
+            padding: 10px; border-radius: 6px; margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📦 Analisis Similaritas Kode Mahasiswa</h1>
+    {% if error %}
+        <div class="error">⚠️ {{ error }}</div>
+    {% endif %}
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <p>Upload file ZIP berisi file .py mahasiswa:</p>
+        <input type="file" name="zipfile" accept=".zip" required>
+        <br>
+        <button type="submit">Proses</button>
+    </form>
+</div>
+</body>
+</html>

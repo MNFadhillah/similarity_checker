@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Hasil Analisis Similaritas</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; }
+        .container {
+            width: 80%; margin: 40px auto; background: #fff; border-radius: 12px;
+            padding: 30px 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        img { display: block; margin: 20px auto; max-width: 90%; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+        th { background: #e3e3e3; }
+        a.button {
+            background: #3498db; color: white; text-decoration: none;
+            padding: 10px 20px; border-radius: 6px; display: inline-block;
+            margin-top: 20px;
+        }
+        a.button:hover { background: #2c80b4; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📊 Hasil Analisis Similaritas</h1>
+
+    {% if heatmap_url %}
+        <h3>🔍 Heatmap Similaritas</h3>
+        <img src="{{ heatmap_url }}" alt="Heatmap Similaritas">
+    {% endif %}
+
+    {% if table_html %}
+        <h3>Tabel Similaritas Antar File</h3>
+        {{ table_html|safe }}
+    {% endif %}
+
+    <a href="{{ download_url }}" class="button">⬇️ Download Semua Hasil</a>
+    <a href="/" class="button" style="background:#7f8c8d;">⬅️ Kembali</a>
+</div>
+</body>
+</html>
