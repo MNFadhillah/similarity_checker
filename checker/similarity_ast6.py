@@ -5,7 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 # import tkinter as tk
 import re
-from tkinter import filedialog
+# from tkinter import filedialog
 from openpyxl import Workbook
 
 """pembobotan indikator AST dari 0.00 - 1.00 (bobot aspek yang dideteksi, jika bobot adalah 0.00 = diabaikan/tidak mempengaruhi nilai kemiripan)"""
