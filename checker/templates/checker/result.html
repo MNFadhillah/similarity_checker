@@ -4,39 +4,129 @@
     <meta charset="UTF-8">
     <title>Hasil Analisis Similaritas</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
         .container {
-            width: 80%; margin: 40px auto; background: #fff; border-radius: 12px;
-            padding: 30px 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 85%;
+            max-width: 1100px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 12px;
+            padding: 30px 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        img { display: block; margin: 20px auto; max-width: 90%; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-        th { background: #e3e3e3; }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        h3 {
+            color: #34495e;
+            margin-top: 25px;
+            border-left: 5px solid #3498db;
+            padding-left: 10px;
+        }
+        .info-box {
+            background: #ecf9ff;
+            border-left: 6px solid #3498db;
+            padding: 12px 16px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            color: #2c3e50;
+        }
+        img {
+            display: block;
+            margin: 20px auto;
+            max-width: 95%;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        table {
+            width: 100%;
+            min-width: 700px;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #e0e0e0;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background: #3498db;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        tr:nth-child(even) { background: #f2f8ff; }
         a.button {
-            background: #3498db; color: white; text-decoration: none;
-            padding: 10px 20px; border-radius: 6px; display: inline-block;
-            margin-top: 20px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 20px 8px 0;
+            transition: 0.3s;
         }
-        a.button:hover { background: #2c80b4; }
+        a.button:hover {
+            background: #2c80b4;
+        }
+        a.back {
+            background: #7f8c8d;
+        }
+        .footer-note {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 13px;
+            color: #7f8c8d;
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>📊 Hasil Analisis Similaritas</h1>
+    <h1>📊 Hasil Analisis Similaritas Kode Mahasiswa</h1>
+
+    <div class="info-box">
+        <strong>Keterangan:</strong>
+        <p>
+            Nilai pada tabel menunjukkan tingkat kemiripan antar file <b>.py</b> mahasiswa. 
+            Semakin tinggi nilainya (mendekati <b>1.00</b>), semakin besar tingkat kesamaan kode mereka. 
+            Visualisasi heatmap membantu melihat pola kemiripan antar mahasiswa secara keseluruhan.
+        </p>
+    </div>
 
     {% if heatmap_url %}
-        <h3>🔍 Heatmap Similaritas</h3>
+        <h3>🔍 Visualisasi Heatmap Similaritas</h3>
         <img src="{{ heatmap_url }}" alt="Heatmap Similaritas">
     {% endif %}
 
     {% if table_html %}
-        <h3>Tabel Similaritas Antar File</h3>
-        {{ table_html|safe }}
+        <h3>📋 Tabel Similaritas Antar File</h3>
+        <div class="table-wrapper">
+            {{ table_html|safe }}
+        </div>
     {% endif %}
 
-    <a href="{{ download_url }}" class="button">⬇️ Download Semua Hasil</a>
-    <a href="/" class="button" style="background:#7f8c8d;">⬅️ Kembali</a>
+    <div style="text-align:center;">
+        <a href="{{ download_url }}" class="button">⬇️ Download Semua Hasil</a>
+        <a href="/" class="button back">⬅️ Kembali</a>
+    </div>
+
+    <div class="footer-note">
+        © 2025 Analisis Similaritas Kode – dikembangkan untuk keperluan akademik.
+    </div>
 </div>
 </body>
 </html>
