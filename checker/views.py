@@ -50,11 +50,11 @@ def upload_view(request):
         output_zip = base_result_dir / f"{result_folder.name}.zip"
         shutil.make_archive(str(output_zip).replace(".zip", ""), "zip", result_folder)
 
-         # Path untuk tampilan
+        # Path untuk tampilan
         context = {
             "heatmap_url": f"/media/results/{result_folder.name}/heatmap_similaritas.png",
             "table_html": matrix.to_html(classes="table table-striped", float_format="%.2f"),
-            "download_url": f"/media/results/{result_folder.name}.zip", 
+            "download_url": f"/download/{output_zip.name}",
         }
         return render(request, "checker/result.html", context)
 
