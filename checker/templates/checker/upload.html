@@ -2,38 +2,118 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Upload ZIP Kode Mahasiswa</title>
+    <title>Analisis Similaritas Kode Mahasiswa</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f8; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
         .container {
-            width: 60%; margin: 60px auto; background: #fff; padding: 30px 40px;
-            border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center;
+            width: 60%;
+            max-width: 700px;
+            margin: 80px auto;
+            background: #fff;
+            padding: 40px 50px;
+            border-radius: 14px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            text-align: center;
         }
-        input[type="file"] { margin: 20px 0; }
+        h1 {
+            color: #2c3e50;
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
+        p.subtext {
+            color: #7f8c8d;
+            font-size: 15px;
+            margin-bottom: 25px;
+        }
+        .info-box {
+            background: #ecf9ff;
+            border-left: 6px solid #3498db;
+            padding: 12px 18px;
+            border-radius: 8px;
+            text-align: left;
+            margin-bottom: 25px;
+        }
+        .info-box strong {
+            color: #2c3e50;
+        }
+        input[type="file"] {
+            margin: 20px 0;
+            padding: 10px;
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            background: #f8fcff;
+            cursor: pointer;
+            width: 90%;
+            max-width: 400px;
+        }
+        input[type="file"]:hover {
+            background: #e9f4ff;
+        }
         button {
-            background: #3498db; color: white; border: none;
-            padding: 10px 20px; border-radius: 6px; cursor: pointer;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: 0.3s;
         }
-        button:hover { background: #2c80b4; }
+        button:hover {
+            background: #2c80b4;
+        }
         .error {
-            background: #ffe0e0; border: 1px solid #e74c3c;
-            padding: 10px; border-radius: 6px; margin-bottom: 15px;
+            background: #ffe6e6;
+            border: 1px solid #e74c3c;
+            color: #c0392b;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        footer {
+            margin-top: 40px;
+            font-size: 13px;
+            color: #7f8c8d;
         }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>📦 Analisis Similaritas Kode Mahasiswa</h1>
+    <p class="subtext">
+        Unggah file <b>.zip</b> yang berisi kumpulan file <b>.py</b> dari mahasiswa 
+        untuk dilakukan analisis kemiripan kode secara otomatis.
+    </p>
+
+    <div class="info-box">
+        <strong>Petunjuk:</strong>
+        <ul>
+            <li>Pastikan file ZIP hanya berisi file <b>.py</b> (tanpa folder di dalamnya).</li>
+            <li>Ukuran file maksimal 50MB.</li>
+            <li>Setelah proses selesai, sistem akan menampilkan <b>heatmap</b> dan tabel kemiripan antar file.</li>
+        </ul>
+    </div>
+
     {% if error %}
         <div class="error">⚠️ {{ error }}</div>
     {% endif %}
+
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
-        <p>Upload file ZIP berisi file .py mahasiswa:</p>
         <input type="file" name="zipfile" accept=".zip" required>
         <br>
-        <button type="submit">Proses</button>
+        <button type="submit">🚀 Proses Analisis</button>
     </form>
+
+    <footer>
+        © 2025 Analisis Similaritas Kode — dikembangkan untuk mendukung evaluasi pembelajaran.
+    </footer>
 </div>
 </body>
 </html>
