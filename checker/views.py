@@ -54,7 +54,7 @@ def upload_view(request):
         context = {
             "heatmap_url": f"/media/results/{result_folder.name}/heatmap_similaritas.png",
             "table_html": matrix.to_html(classes="table table-striped", float_format="%.2f"),
-            "download_url": f"/media/results/{result_folder.name}/{result_folder.name}.zip",
+            "download_url": f"/media/results/{result_folder.name}.zip", 
         }
         return render(request, "checker/result.html", context)
 
