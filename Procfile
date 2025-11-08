@@ -1,0 +1,1 @@
+web: gunicorn similarity_checker.wsgi --workers 2 --threads 4 --timeout 180

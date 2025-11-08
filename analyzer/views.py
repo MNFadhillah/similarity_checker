@@ -1,0 +1,70 @@
+from django.shortcuts import render, redirect
+import uuid
+from pathlib import Path
+from django.conf import settings
+from django.urls import reverse
+from .forms import UploadZipForm
+from .utils.zip_utils import safe_extract
+from .services.similarity_engine import run_analysis
+from django.http import FileResponse, Http404
+import mimetypes
+
+
+# === Halaman utama: landing + upload zip ===
+def index(request):
+    if request.method == "GET":
+        form = UploadZipForm()
+        return render(request, "index.html", {"form": form})
+
+    if request.method == "POST":
+        form = UploadZipForm(request.POST, request.FILES)
+        if not form.is_valid():
+            return render(request, "index.html", {"form": form, "error": "Pastikan file .zip valid."})
+
+        job_id = uuid.uuid4().hex[:12]
+        upload_dir = Path(settings.MEDIA_ROOT) / "uploads" / job_id
+        work_dir = Path(settings.MEDIA_ROOT) / "workspaces" / job_id
+        out_dir = Path(settings.MEDIA_ROOT) / "results" / job_id
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        work_dir.mkdir(parents=True, exist_ok=True)
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        # Simpan file upload
+        zip_file = form.cleaned_data['zip_file']
+        zip_path = upload_dir / zip_file.name
+        with zip_path.open("wb") as f:
+            for chunk in zip_file.chunks():
+                f.write(chunk)
+
+        # Ekstrak dan jalankan analisis
+        safe_extract(zip_path, work_dir)
+        df, outputs = run_analysis(work_dir, out_dir)
+
+        # Siapkan context hasil
+        context = {
+            "files": [
+                {"label": "Blok Kode Mirip (.txt)", "filename": outputs['txt'].name, "job_id": job_id},
+                {"label": "Blok Kode Mirip (.xlsx)", "filename": outputs['xlsx'].name, "job_id": job_id},
+                {"label": "Matriks Similaritas (.csv)", "filename": outputs['csv'].name, "job_id": job_id},
+                {"label": "Heatmap Similaritas (.png)", "filename": outputs['png'].name, "job_id": job_id},
+            ],
+            "matrix": df.round(2).to_html(classes="table table-bordered", border=0)
+        }
+
+        return render(request, "result.html", context)
+
+
+# === View untuk download file hasil dengan MIME type sesuai ===
+def download_result(request, job_id, filename):
+    """Melayani download file hasil analisis dengan MIME type sesuai."""
+    file_path = Path(settings.MEDIA_ROOT) / "results" / job_id / filename
+    if not file_path.exists():
+        raise Http404("File tidak ditemukan")
+
+    mime_type, _ = mimetypes.guess_type(file_path)
+    if not mime_type:
+        mime_type = 'application/octet-stream'
+
+    response = FileResponse(open(file_path, 'rb'), content_type=mime_type)
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response

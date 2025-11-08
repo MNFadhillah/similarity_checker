@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="landing">
+  <div class="card">
+    <p class="desc">
+      Web ini mendeteksi tingkat kemiripan kode Python menggunakan
+      analisis <strong>Abstract Syntax Tree (AST)</strong> dengan pembobotan indikator.
+      Unggah satu berkas <code>.zip</code> berisi file <code>.py</code> untuk mulai analisis.
+    </p>
+
+    {% if error %}
+      <div class="alert">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="upload-form">
+      {% csrf_token %}
+      {{ form.zip_file.label_tag }}
+      {{ form.zip_file }}
+      <button type="submit" class="btn">Analisis Sekarang</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

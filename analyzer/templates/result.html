@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="result-container">
+  <div class="card">
+    <h2>Hasil Analisis Similarity Checker</h2>
+    <p>Berikut hasil analisis kemiripan kode Python berdasarkan metode <strong>AST (Abstract Syntax Tree)</strong>.</p>
+
+    <h3>📂 Unduh File Hasil</h3>
+    <div class="download-buttons">
+      {% for f in files %}
+        <a href="{% url 'download_result' f.job_id f.filename %}" class="btn-download" download>
+          {{ f.label }}
+        </a>
+      {% endfor %}
+    </div>
+
+    <hr>
+
+    <h3>🖼️ Heatmap Similaritas</h3>
+    {% for f in files %}
+      {% if ".png" in f.filename %}
+        <div class="heatmap-box">
+          <img src="{% url 'download_result' f.job_id f.filename %}" alt="Heatmap Similaritas" class="heatmap-img">
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    <hr>
+
+    <h3>📋 Matriks Similaritas</h3>
+    <div class="matrix-table">
+      {{ matrix|safe }}
+    </div>
+
+    <div style="margin-top:30px;">
+      <a href="{% url 'index' %}" class="btn-back">⬅️ Kembali ke Halaman Utama</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
