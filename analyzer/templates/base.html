@@ -42,9 +42,9 @@
     .card {
       background: white;
       border-radius: 18px;
-      padding: 30px 32px;
+      padding: 30px 40px;
       box-shadow: 0 10px 28px rgba(0,0,0,0.12);
-      max-width: 900px;              /* ⬅️ batasi lebar kartu */
+      max-width: 1400px;              /* ⬅️ batasi lebar kartu */
       width: 100%;
       text-align: left;              /* ⬅️ isi form rata kiri */
       box-sizing: border-box;
@@ -114,6 +114,11 @@
       display: flex;
       justify-content: center;   /* ✅ ini yang bikin ke tengah */
       width: 100%;
+    }
+
+    .result-desc {
+      text-align: center;
+      margin-bottom: 22px;
     }
 
     /* container tombol + preview */
@@ -230,6 +235,38 @@
       box-sizing: border-box;
       padding: 4px 6px;
     }
+
+    .preview-box {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin-top: 6px;
+  font-size: 11px;
+  max-height: 130px;
+  overflow-y: auto;   /* bisa scroll kalau tinggi */
+  overflow-x: auto;   /* bisa scroll kalau lebar */
+  text-align: left;
+}
+
+    /* Khusus tabel kecil di dalam preview CSV */
+    .preview-box table {
+      border-collapse: collapse;
+      font-size: 10px;
+      max-width: 100%;
+    }
+
+    .preview-box th,
+    .preview-box td {
+      border: 1px solid #ccc;
+      padding: 2px 4px;
+      white-space: nowrap;
+    }
+    .preview-box pre {
+      margin: 0;
+      white-space: pre-wrap;
+    }
+
+
 
     /* Responsif kecil */
     @media (max-width: 768px) {

@@ -61,6 +61,43 @@ def index(request):
 
         # ✅ 4) KIRIM bobot ke run_analysis
         df, outputs = run_analysis(work_dir, out_dir, ast_weights=weights)
+        with open(outputs["txt"], encoding="utf-8") as f:
+            txt_lines = f.read().splitlines()
+
+        # batasi hanya beberapa baris pertama untuk preview txt
+        txt_preview = txt_lines[:5]   # 5 baris contoh
+
+        total_rows = len(df)
+        total_cols = len(df.columns)
+        total_cells = df.size  # rows * cols
+
+        # --- buat sample pasangan dari matriks (bukan tabel lebar) ---
+        pairs = []
+        index_names = list(df.index)
+        col_names = list(df.columns)
+
+        for i in range(len(index_names)):
+            for j in range(i + 1, len(col_names)):   # hanya segitiga atas
+                pairs.append({
+                    "file_a": index_names[i],
+                    "file_b": col_names[j],
+                    "score": float(df.iloc[i, j] or 0.0),
+                })
+
+        # urutkan dari similarity tertinggi
+        pairs_sorted = sorted(pairs, key=lambda x: x["score"], reverse=True)
+
+        # ambil hanya 3 contoh teratas
+        csv_pairs_preview = pairs_sorted[:3]
+
+        preview = {
+            "txt": txt_preview,
+            "csv_pairs": csv_pairs_preview,
+            "xlsx": f"Matriks {total_rows} × {total_cols} (total {total_cells} nilai similaritas).",
+            "png": outputs["png"].name,
+        }
+
+
 
         # Siapkan context hasil (tambah bobot kalau mau ditampilkan di result.html)
         context = {
@@ -70,8 +107,10 @@ def index(request):
                 {"label": "Matriks Similaritas (.csv)", "filename": outputs['csv'].name, "job_id": job_id},
                 {"label": "Heatmap Similaritas (.png)", "filename": outputs['png'].name, "job_id": job_id},
             ],
+
             "matrix": df.round(2).to_html(classes="table table-bordered", border=0),
             "weights": weights,  # ✅ kalau mau dipakai di result.html
+            "preview": preview
         }
 
         return render(request, "result.html", context)

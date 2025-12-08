@@ -4,48 +4,86 @@
 <section class="result-container">
   <div class="card">
     <h2>Hasil Analisis Similarity Checker</h2>
-    <p>
-      Berikut hasil analisis kemiripan kode Python berdasarkan metode
+    <p class="result-desc">
+      Berikut hasil analisis kemiripan kode Python berdasarkan metode 
       <strong>AST (Abstract Syntax Tree)</strong>.
     </p>
 
+    <!-- ==========================
+         UNDUH FILE HASIL (TXT/XLSX/CSV)
+    =========================== -->
     <h3>Unduh File Hasil</h3>
     <div class="download-buttons">
       {% for f in files %}
+        {% if not ".png" in f.filename %}
         <div class="download-item">
           <a href="{% url 'download_result' f.job_id f.filename %}"
              class="btn-download" download>
             {{ f.label }}
           </a>
 
-          {# Deskripsi singkat tiap file berdasarkan ekstensi #}
+          {# === PREVIEW TXT: blok kode mirip === #}
           {% if ".txt" in f.filename %}
             <p class="download-desc">
-              Berisi daftar pasangan file serta baris-baris kode Python
-              yang terdeteksi mirip dalam format teks biasa.
+              Berisi ringkasan pasangan file dan potongan blok kode Python
+              yang terdeteksi mirip. Cocok untuk menelusuri indikasi plagiarisme
+              per fungsi, loop, atau percabangan.
             </p>
+
+            {% if preview.txt %}
+              <div class="preview-box">
+                <pre>
+{% for line in preview.txt %}{{ line }}
+{% endfor %}
+                </pre>
+                <span style="font-style:italic; font-size:11px;">
+                  (Cuplikan sebagian isi. Lihat file TXT untuk detail lengkap.)
+                </span>
+              </div>
+            {% endif %}
+
+          {# === PREVIEW XLSX: ringkasan ukuran matriks === #}
           {% elif ".xlsx" in f.filename %}
             <p class="download-desc">
-              Berisi blok-blok kode mirip dalam bentuk spreadsheet sehingga
-              mudah difilter dan dianalisis lebih lanjut.
+              Berisi blok-blok kode mirip dalam format Excel sehingga dapat
+              difilter, diurutkan, dan dianalisis lebih lanjut (misalnya per
+              pasangan mahasiswa atau jenis blok kode).
             </p>
+
+            <div class="preview-box">
+              {{ preview.xlsx }}
+            </div>
+
+          {# === PREVIEW CSV: contoh pasangan similarity tertinggi === #}
           {% elif ".csv" in f.filename %}
             <p class="download-desc">
-              Berisi matriks persentase kemiripan antar semua file program
-              dalam format tabel CSV.
+              Berisi matriks nilai similaritas antar semua file program dalam
+              format CSV. Dapat dibuka di Excel/Spreadsheet untuk analisis lanjutan.
             </p>
-          {% elif ".png" in f.filename %}
-            <p class="download-desc">
-              Berisi visualisasi heatmap yang menampilkan tingkat kemiripan
-              antar pasangan file secara visual.
-            </p>
+
+            {% if preview.csv_pairs %}
+              <div class="preview-box">
+                <strong>Contoh pasangan similarity tertinggi:</strong><br>
+                {% for p in preview.csv_pairs %}
+                  • {{ p.file_a }} vs {{ p.file_b }} → {{ p.score|floatformat:2 }}<br>
+                {% endfor %}
+                <span style="font-style:italic; font-size:11px;">
+                  (Lihat file CSV dan matriks di bawah untuk daftar lengkap.)
+                </span>
+              </div>
+            {% endif %}
+
           {% endif %}
         </div>
+        {% endif %}
       {% endfor %}
     </div>
 
     <hr>
 
+    <!-- ==========================
+         HEATMAP SIMILARITAS
+    =========================== -->
     <h3>Heatmap Similaritas</h3>
     {% for f in files %}
       {% if ".png" in f.filename %}
@@ -54,11 +92,21 @@
                alt="Heatmap Similaritas"
                class="heatmap-img">
         </div>
+
+        <div style="margin-top:12px;">
+          <a href="{% url 'download_result' f.job_id f.filename %}"
+             class="btn-download" download>
+            Unduh Heatmap (PNG)
+          </a>
+        </div>
       {% endif %}
     {% endfor %}
 
     <hr>
 
+    <!-- ==========================
+         MATRIKS SIMILARITAS
+    =========================== -->
     <h3>Matriks Similaritas</h3>
     <div class="matrix-table">
       {{ matrix|safe }}
