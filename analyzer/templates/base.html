@@ -10,6 +10,7 @@
       background: #f5f7fa;
       color: #222;
     }
+
     header {
       background: linear-gradient(90deg, #004e92, #000428);
       color: white;
@@ -17,25 +18,50 @@
       padding: 25px 0;
       box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     }
-    header h1 { margin: 0; font-size: 26px; letter-spacing: 1px; }
-    main { max-width: 1200px; margin: 10px auto; padding: 0 20px; }
+    header h1 {
+      margin: 0;
+      font-size: 26px;
+      letter-spacing: 1px;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 10px auto;
+      padding: 0 20px;
+    }
 
     .card-container {
       display: flex;
       justify-content: center;
-      align-items: center;
-      height: 70vh;
+      align-items: flex-start;       /* ⬅️ supaya mulai dari atas, bukan tengah */
+      min-height: 60vh;              /* ⬅️ bukan height fix lagi */
+      padding: 30px 0 40px;          /* ruang napas atas–bawah */
+      box-sizing: border-box;
     }
+
     .card {
       background: white;
       border-radius: 18px;
-      padding: 40px 40px;   /* diperbesar */
+      padding: 30px 32px;
       box-shadow: 0 10px 28px rgba(0,0,0,0.12);
-      text-align: center;
-
+      max-width: 900px;              /* ⬅️ batasi lebar kartu */
+      width: 100%;
+      text-align: left;              /* ⬅️ isi form rata kiri */
+      box-sizing: border-box;
     }
 
-    .desc { color: #444; margin-bottom: 25px; }
+    .card h2,
+    .card h3 {
+      text-align: center;            /* judul tetap di tengah */
+      margin-top: 0;
+    }
+
+    .desc {
+      color: #444;
+      margin-bottom: 25px;
+      text-align: center;
+    }
+
     input[type=file] {
       padding: 8px;
       border: 2px dashed #007bff;
@@ -43,7 +69,9 @@
       width: 100%;
       background: #eef5ff;
       margin-bottom: 15px;
+      box-sizing: border-box;
     }
+
     .btn {
       background: #007bff;
       color: white;
@@ -54,7 +82,10 @@
       font-size: 15px;
       transition: background 0.2s;
     }
-    .btn:hover { background: #0056b3; }
+    .btn:hover {
+      background: #0056b3;
+    }
+
     .alert {
       background: #ffe5e5;
       color: #b30000;
@@ -63,26 +94,45 @@
       margin-bottom: 15px;
       border-radius: 8px;
     }
+
     .hint {
       color: #777;
       font-size: 13px;
       margin-top: 10px;
+      text-align: center;
     }
+
     footer {
       text-align: center;
       padding: 15px;
       font-size: 13px;
       color: #555;
     }
+
     /* === RESULT PAGE STYLE === */
-    .result-container { text-align:center; }
-    .download-buttons {
+    .result-container {
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
+      justify-content: center;   /* ✅ ini yang bikin ke tengah */
+      width: 100%;
+    }
+
+    /* container tombol + preview */
+    .download-buttons {
+      display: flex;               /* ✅ jadi 1 baris */
+      gap: 16px;
+      justify-content: center;     /* ✅ ke tengah */
+      flex-wrap: nowrap;           /* ✅ PAKSA tetap 1 baris */
       margin-bottom: 25px;
     }
+
+    .download-item {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 8px 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+      text-align: center;
+    }
+
     .btn-download {
       display: inline-block;
       background: #007bff;
@@ -97,6 +147,14 @@
       background: #0056b3;
       transform: translateY(-2px);
     }
+
+    .download-desc {
+      font-size: 13px;
+      margin-top: 6px;
+      color: #555;
+      line-height: 1.4;
+    }
+
     .heatmap-box {
       background: #f1f1f1;
       padding: 2px;
@@ -104,29 +162,33 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       max-width: 100%;
     }
+
     .heatmap-img {
       width: 100%;
       height: 100%;
       border-radius: 10px;
     }
+
     .matrix-table {
       overflow-x: auto;
       background: white;
       align-items: center;
       max-width: 100%;
-      /* padding: 5px; */
       box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
+
     .matrix-table table {
       border-collapse: collapse;
-      /* width: 50%;   */
     }
-    .matrix-table th, .matrix-table td {
+
+    .matrix-table th,
+    .matrix-table td {
       border: 1px solid #ccc;
       padding: 4px 6px;
       text-align: center;
       font-size: 12px;
     }
+
     .matrix-table th {
       background: #007bff;
       white-space: normal;
@@ -135,6 +197,7 @@
       max-width: 150px;
       color: white;
     }
+
     .btn-back {
       display: inline-block;
       background: #6c757d;
@@ -144,17 +207,49 @@
       text-decoration: none;
       transition: background 0.2s;
     }
-    .btn-back:hover { background: #5a6268; }
+    .btn-back:hover {
+      background: #5a6268;
+    }
+
+    /* ====== GRID BOBOT AST ====== */
+    .weight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px 20px;
+      margin-top: 10px;
+    }
+
+    .weight-item {
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .weight-item input {
+      width: 100%;
+      margin-top: 4px;
+      box-sizing: border-box;
+      padding: 4px 6px;
+    }
+
+    /* Responsif kecil */
+    @media (max-width: 768px) {
+      .card {
+        padding: 24px 18px;
+      }
+    }
   </style>
 </head>
 <body>
   <header>
     <h1>Similarity Checker</h1>
   </header>
+
   <main>
     {% block content %}{% endblock %}
   </main>
+
   <footer>
     &copy; {{ now|date:"Y" }} | Tim Pengembang Pilkom
+  </footer>
 </body>
 </html>

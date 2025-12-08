@@ -19,8 +19,28 @@ def index(request):
     if request.method == "POST":
         form = UploadZipForm(request.POST, request.FILES)
         if not form.is_valid():
-            return render(request, "index.html", {"form": form, "error": "Pastikan file .zip valid."})
+            return render(
+                request,
+                "index.html",
+                {"form": form, "error": "Pastikan file .zip dan bobot valid."}
+            )
 
+        # ✅ 1) Ambil bobot AST dari form
+        weights = {
+            "structure": form.cleaned_data["structure_weight"],
+            "execution_order": form.cleaned_data["execution_order_weight"],
+            "hierarchy": form.cleaned_data["hierarchy_weight"],
+            "variable_names": form.cleaned_data["variable_names_weight"],
+            "comments": form.cleaned_data["comments_weight"],
+            "formatting": form.cleaned_data["formatting_weight"],
+            "logic_modification": form.cleaned_data["logic_modification_weight"],
+        }
+
+        # ✅ 2) Normalisasi agar total bobot = 1 (opsional tapi rapi)
+        total = sum(weights.values()) or 1
+        weights = {k: v / total for k, v in weights.items()}
+
+        # ✅ 3) Siapkan folder kerja
         job_id = uuid.uuid4().hex[:12]
         upload_dir = Path(settings.MEDIA_ROOT) / "uploads" / job_id
         work_dir = Path(settings.MEDIA_ROOT) / "workspaces" / job_id
@@ -38,9 +58,11 @@ def index(request):
 
         # Ekstrak dan jalankan analisis
         safe_extract(zip_path, work_dir)
-        df, outputs = run_analysis(work_dir, out_dir)
 
-        # Siapkan context hasil
+        # ✅ 4) KIRIM bobot ke run_analysis
+        df, outputs = run_analysis(work_dir, out_dir, ast_weights=weights)
+
+        # Siapkan context hasil (tambah bobot kalau mau ditampilkan di result.html)
         context = {
             "files": [
                 {"label": "Blok Kode Mirip (.txt)", "filename": outputs['txt'].name, "job_id": job_id},
@@ -48,7 +70,8 @@ def index(request):
                 {"label": "Matriks Similaritas (.csv)", "filename": outputs['csv'].name, "job_id": job_id},
                 {"label": "Heatmap Similaritas (.png)", "filename": outputs['png'].name, "job_id": job_id},
             ],
-            "matrix": df.round(2).to_html(classes="table table-bordered", border=0)
+            "matrix": df.round(2).to_html(classes="table table-bordered", border=0),
+            "weights": weights,  # ✅ kalau mau dipakai di result.html
         }
 
         return render(request, "result.html", context)

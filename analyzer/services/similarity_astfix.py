@@ -17,6 +17,11 @@ AST_WEIGHTS = {
 }
 
 
+def get_default_ast_weights():
+    """Mengembalikan salinan bobot default."""
+    return AST_WEIGHTS.copy()
+
+
 def read_file(file_path):
     """Membaca isi file Python."""
     try:
@@ -69,8 +74,11 @@ def extract_code_blocks(code):
         return []
 
 
-def find_similar_blocks(code1, code2, threshold=0.85):
+def find_similar_blocks(code1, code2, threshold=0.85, ast_weights=None):
     """Membandingkan blok kode dan menampilkan yang mirip."""
+    if ast_weights is None:
+        ast_weights = AST_WEIGHTS
+
     blocks1 = extract_code_blocks(code1)
     blocks2 = extract_code_blocks(code2)
     similar_blocks = []
@@ -83,9 +91,10 @@ def find_similar_blocks(code1, code2, threshold=0.85):
             features2 = get_ast_features(block2)
             if not features1 or not features2:
                 continue
+
             sim = sum(
                 (1 - abs(features1[k] - features2[k]) / (max(features1[k], features2[k]) or 1))
-                * AST_WEIGHTS[k] for k in AST_WEIGHTS
+                * ast_weights[k] for k in ast_weights
             )
             if sim >= threshold:
                 similar_blocks.append((type1, sim, block1[:50] + "...", block2[:50] + "..."))
@@ -93,8 +102,11 @@ def find_similar_blocks(code1, code2, threshold=0.85):
     return similar_blocks
 
 
-def compute_similarity(file1, file2):
+def compute_similarity(file1, file2, ast_weights=None):
     """Membandingkan dua file Python berdasarkan fitur AST dengan bobot."""
+    if ast_weights is None:
+        ast_weights = AST_WEIGHTS
+
     code1 = read_file(file1)
     code2 = read_file(file2)
 
@@ -109,15 +121,16 @@ def compute_similarity(file1, file2):
 
     similarity_scores = {}
 
-    for key in AST_WEIGHTS.keys():
+    for key in ast_weights.keys():
         max_value = max(features1[key], features2[key]) or 1
         similarity_scores[key] = 1 - abs(features1[key] - features2[key]) / max_value
 
     weighted_similarity = sum(
-        similarity_scores[key] * AST_WEIGHTS[key] for key in AST_WEIGHTS.keys()
+        similarity_scores[key] * ast_weights[key] for key in ast_weights.keys()
     )
 
     return weighted_similarity
+
 
 
 def save_similar_blocks_txt(similar_blocks_data, folder_path):
@@ -157,8 +170,11 @@ def save_similar_blocks_excel(similar_blocks_data, folder_path):
     print(f"File Excel disimpan di: {excel_path}")
 
 
-def compare_all_files(folder_path):
+def compare_all_files(folder_path, ast_weights=None, threshold=0.85):
     """Membandingkan semua file Python dalam folder (tanpa GUI)."""
+    if ast_weights is None:
+        ast_weights = AST_WEIGHTS
+
     if not folder_path or not os.path.exists(folder_path):
         print("Folder tidak ditemukan.")
         return
@@ -174,36 +190,25 @@ def compare_all_files(folder_path):
 
     for i in range(len(files)):
         for j in range(i, len(files)):
-            similarity = compute_similarity(files[i], files[j])
+            similarity = compute_similarity(files[i], files[j], ast_weights=ast_weights)
             similarity_matrix.iloc[i, j] = similarity
             similarity_matrix.iloc[j, i] = similarity
 
             code1 = read_file(files[i])
             code2 = read_file(files[j])
-            similar_parts = find_similar_blocks(code1, code2)
+            similar_parts = find_similar_blocks(
+                code1, code2,
+                threshold=threshold,
+                ast_weights=ast_weights
+            )
             if similar_parts:
                 similar_blocks_all.append({
                     "file1": os.path.basename(files[i]),
                     "file2": os.path.basename(files[j]),
                     "similar_blocks": similar_parts
                 })
+    # bagian bawah (save csv, txt, xlsx, heatmap) BIARKAN seperti semula
 
-    result_path = os.path.join(folder_path, "hasil_similaritas.csv")
-    similarity_matrix.to_csv(result_path)
-    save_similar_blocks_txt(similar_blocks_all, folder_path)
-    save_similar_blocks_excel(similar_blocks_all, folder_path)
-
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(similarity_matrix, annot=True, cmap="coolwarm", fmt=".2f", linewidths=0.5)
-    plt.title("Heatmap Similaritas Kode Mahasiswa")
-    plt.xticks(rotation=90)
-    plt.yticks(rotation=0)
-    plt.tight_layout()
-    heatmap_path = os.path.join(folder_path, "heatmap_similaritas.png")
-    plt.savefig(heatmap_path)
-    plt.close()
-
-    print(f"Hasil disimpan di: {result_path}")
 
 
 # Hindari pemanggilan otomatis GUI saat diimpor Django

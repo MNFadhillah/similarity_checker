@@ -1,26 +1,74 @@
 {% extends "base.html" %}
 {% block content %}
+
 <section class="landing">
   <div class="card-container">
     <div class="card">
+
       <p class="desc">
         Website ini digunakan untuk memeriksa tingkat kemiripan kode Python dengan
-        menggunakan algoritma <strong>Abstract Syntax Tree (AST)</strong>.
+        menggunakan algoritma <strong>Abstract Syntax Tree (AST)</strong>.<br>
         Silakan unggah satu berkas <code>.zip</code> yang berisi beberapa file
-        <code>.py</code> untuk dianalisis.
+        <code>.py</code> untuk dianalisis, lalu atur pembobotan indikator AST jika diperlukan.
       </p>
-  
+
       {% if error %}
         <div class="alert">{{ error }}</div>
       {% endif %}
-  
-      <form method="post" enctype="multipart/form-data" class="upload-form">
+
+      <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.zip_file.label_tag }}
-        {{ form.zip_file }}
-        <button type="submit" class="btn">Analisis Sekarang</button>
+
+        <!-- Input ZIP -->
+        <div class="mb-3">
+          {{ form.zip_file.label_tag }}<br>
+          {{ form.zip_file }}
+        </div>
+
+        <h3 style="margin-top:20px;">Pembobotan Indikator AST (0–1)</h3>
+        <p class="hint">
+          Anda dapat menyesuaikan bobot tiap indikator. Total bobot akan dinormalisasi menjadi 1
+          sehingga tidak perlu tepat berjumlah 1.
+        </p>
+
+        <div class="weight-grid">
+          <div class="weight-item">
+            {{ form.structure_weight.label_tag }}<br>
+            {{ form.structure_weight }}
+          </div>
+          <div class="weight-item">
+            {{ form.execution_order_weight.label_tag }}<br>
+            {{ form.execution_order_weight }}
+          </div>
+          <div class="weight-item">
+            {{ form.hierarchy_weight.label_tag }}<br>
+            {{ form.hierarchy_weight }}
+          </div>
+          <div class="weight-item">
+            {{ form.variable_names_weight.label_tag }}<br>
+            {{ form.variable_names_weight }}
+          </div>
+          <div class="weight-item">
+            {{ form.comments_weight.label_tag }}<br>
+            {{ form.comments_weight }}
+          </div>
+          <div class="weight-item">
+            {{ form.formatting_weight.label_tag }}<br>
+            {{ form.formatting_weight }}
+          </div>
+          <div class="weight-item">
+            {{ form.logic_modification_weight.label_tag }}<br>
+            {{ form.logic_modification_weight }}
+          </div>
+        </div>
+
+        <button type="submit" class="btn" style="margin-top:20px;">
+          Analisis Sekarang
+        </button>
       </form>
+
     </div>
   </div>
 </section>
+
 {% endblock %}
