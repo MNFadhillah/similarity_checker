@@ -20,12 +20,12 @@
         {% csrf_token %}
 
         <!-- Input ZIP -->
-        <div class="mb-3">
+        <div>
           {{ form.zip_file.label_tag }}<br>
           {{ form.zip_file }}
         </div>
 
-        <h3 style="margin-top:20px;">Pembobotan Indikator AST (0–1)</h3>
+        <h3>Pembobotan Indikator AST (0–1)</h3>
         <p class="hint">
           Anda dapat menyesuaikan bobot tiap indikator. Total bobot akan dinormalisasi menjadi 1
           sehingga tidak perlu tepat berjumlah 1.
@@ -60,6 +60,17 @@
             {{ form.logic_modification_weight.label_tag }}<br>
             {{ form.logic_modification_weight }}
           </div>
+        </div>
+        
+        <h3>Pengaturan Threshold Kemiripan</h3>
+        <p class="hint">
+          Nilai threshold digunakan sebagai batas minimal tingkat kemiripan untuk menentukan apakah
+          dua kode dianggap mirip. Semakin tinggi threshold, semakin ketat penilaiannya.
+        </p>
+
+        <div class="mb-3">
+          {{ form.threshold.label_tag }}<br>
+          {{ form.threshold }}
         </div>
 
         <button type="submit" class="btn" style="margin-top:20px;">

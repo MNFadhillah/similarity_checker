@@ -35,3 +35,10 @@ class UploadZipForm(forms.Form):
         label="Modifikasi logika",
         min_value=0, max_value=1, initial=0.10
     )
+    threshold = forms.FloatField(
+        min_value=0.0,
+        max_value=1.0,
+        initial=0.75,
+        label="Threshold Kemiripan (0,0 - 1,0)"
+    )
+

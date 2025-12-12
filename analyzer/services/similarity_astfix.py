@@ -1,217 +1,209 @@
 import ast
 import os
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 from openpyxl import Workbook
 
-"""pembobotan indikator AST dari 0.00 - 1.00"""
+# ===============================
+# Bobot indikator AST (default)
+# ===============================
 AST_WEIGHTS = {
-    "structure": 0.18,  # struktur sintaksis
-    "execution_order": 0.12,  # urutan eksekusi
-    "hierarchy": 0.10,  # hierarki blok kode
-    "variable_names": 0.20,  # perubahan nama variabel/fungsi
-    "comments": 0.20,  # komentar
-    "formatting": 0.10,  # indentasi/spasi
-    "logic_modification": 0.10  # modifikasi logika
+    "structure": 0.18,
+    "execution_order": 0.12,
+    "hierarchy": 0.10,
+    "variable_names": 0.20,
+    "comments": 0.20,
+    "formatting": 0.10,
+    "logic_modification": 0.10
 }
 
 
 def get_default_ast_weights():
-    """Mengembalikan salinan bobot default."""
     return AST_WEIGHTS.copy()
 
 
+# ===============================
+# Util dasar
+# ===============================
 def read_file(file_path):
-    """Membaca isi file Python."""
     try:
-        with open(file_path, "r", encoding="utf-8") as file:
-            return file.read()
-    except FileNotFoundError:
-        print(f"File {file_path} tidak ditemukan.")
+        with open(file_path, "r", encoding="utf-8") as f:
+            return f.read()
+    except Exception:
         return None
 
 
 def get_ast_features(code):
-    """Mengekstrak fitur AST untuk tiap indikator."""
     try:
         tree = ast.parse(code)
-        functions = [node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)]
-        loops = [node for node in ast.walk(tree) if isinstance(node, (ast.For, ast.While))]
-        conditionals = [node for node in ast.walk(tree) if isinstance(node, ast.If)]
-        assignments = [node for node in ast.walk(tree) if isinstance(node, ast.Assign)]
 
         return {
-            "structure": len(functions) + len(loops) + len(conditionals),
+            "structure": sum(isinstance(n, (ast.FunctionDef, ast.For, ast.While, ast.If)) for n in ast.walk(tree)),
             "execution_order": sum(1 for _ in ast.walk(tree)),
-            "hierarchy": sum(1 for node in ast.walk(tree) if isinstance(node, ast.FunctionDef) and node.body),
+            "hierarchy": sum(isinstance(n, ast.FunctionDef) and bool(n.body) for n in ast.walk(tree)),
             "variable_names": len({n.id for n in ast.walk(tree) if isinstance(n, ast.Name)}),
             "comments": code.count("#"),
             "formatting": code.count(" ") + code.count("\t"),
-            "logic_modification": len(assignments)
+            "logic_modification": sum(isinstance(n, ast.Assign) for n in ast.walk(tree)),
         }
-    except SyntaxError as e:
-        print(f"Syntax Error di {code[:50]}...: {e}")
+    except Exception:
         return None
 
 
 def extract_code_blocks(code):
-    """Ekstrak blok fungsi, loop, dan if dari kode Python."""
     try:
         tree = ast.parse(code)
         blocks = []
+
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.For, ast.While, ast.If)):
-                start_lineno = getattr(node, "lineno", None)
-                end_lineno = getattr(node, "end_lineno", None)
-                if start_lineno and end_lineno:
-                    lines = code.splitlines()[start_lineno - 1:end_lineno]
-                    block_code = "\n".join(lines)
-                    blocks.append((type(node).__name__, block_code.strip()))
+                if hasattr(node, "lineno") and hasattr(node, "end_lineno"):
+                    lines = code.splitlines()[node.lineno - 1: node.end_lineno]
+                    blocks.append((type(node).__name__, "\n".join(lines)))
+
         return blocks
-    except Exception as e:
-        print(f"Error parsing code blocks: {e}")
+    except Exception:
         return []
 
 
-def find_similar_blocks(code1, code2, threshold=0.85, ast_weights=None):
-    """Membandingkan blok kode dan menampilkan yang mirip."""
+# ===============================
+# Similarity antar BLOK (TIDAK FILTER)
+# ===============================
+def find_similar_blocks(code1, code2, threshold=0.7, ast_weights=None):
     if ast_weights is None:
-        ast_weights = AST_WEIGHTS
+        ast_weights = AST_WEIGHTS.copy()
+
+    # normalisasi bobot
+    total = sum(ast_weights.values())
+    if total <= 0:
+        ast_weights = {k: 1 / len(ast_weights) for k in ast_weights}
+    else:
+        ast_weights = {k: v / total for k, v in ast_weights.items()}
+
+    threshold = max(0.0, min(1.0, float(threshold)))
 
     blocks1 = extract_code_blocks(code1)
     blocks2 = extract_code_blocks(code2)
-    similar_blocks = []
+
+    results = []
+    eps = 1e-9
 
     for type1, block1 in blocks1:
         for type2, block2 in blocks2:
             if type1 != type2:
                 continue
-            features1 = get_ast_features(block1)
-            features2 = get_ast_features(block2)
-            if not features1 or not features2:
+
+            f1 = get_ast_features(block1)
+            f2 = get_ast_features(block2)
+            if not f1 or not f2:
                 continue
 
-            sim = sum(
-                (1 - abs(features1[k] - features2[k]) / (max(features1[k], features2[k]) or 1))
-                * ast_weights[k] for k in ast_weights
-            )
+            weighted_sum = 0.0
+            for k in ast_weights:
+                a = float(f1.get(k, 0.0))
+                b = float(f2.get(k, 0.0))
+                denom = max(abs(a), abs(b), eps)
+                weighted_sum += (1 - abs(a - b) / denom) * ast_weights[k]
+
+            sim = float(weighted_sum)
+
+            # threshold HANYA UNTUK LEVEL
             if sim >= threshold:
-                similar_blocks.append((type1, sim, block1[:50] + "...", block2[:50] + "..."))
+                level = "Tinggi"
+            elif sim >= threshold * 0.5:
+                level = "Sedang"
+            else:
+                level = "Rendah"
 
-    return similar_blocks
+            results.append({
+                "type": type1,
+                "score": sim,
+                "level": level,
+                "snippet_a": block1[:120],
+                "snippet_b": block2[:120],
+            })
+
+    return results
 
 
+# ===============================
+# Similarity antar FILE (CSV / matrix)
+# ===============================
 def compute_similarity(file1, file2, ast_weights=None):
-    """Membandingkan dua file Python berdasarkan fitur AST dengan bobot."""
     if ast_weights is None:
         ast_weights = AST_WEIGHTS
 
     code1 = read_file(file1)
     code2 = read_file(file2)
-
     if not code1 or not code2:
         return 0.0
 
-    features1 = get_ast_features(code1)
-    features2 = get_ast_features(code2)
-
-    if not features1 or not features2:
+    f1 = get_ast_features(code1)
+    f2 = get_ast_features(code2)
+    if not f1 or not f2:
         return 0.0
 
-    similarity_scores = {}
+    total = sum(ast_weights.values())
+    if total <= 0:
+        ast_weights = {k: 1 / len(ast_weights) for k in ast_weights}
+    else:
+        ast_weights = {k: v / total for k, v in ast_weights.items()}
 
-    for key in ast_weights.keys():
-        max_value = max(features1[key], features2[key]) or 1
-        similarity_scores[key] = 1 - abs(features1[key] - features2[key]) / max_value
+    sim = 0.0
+    for k in ast_weights:
+        a = f1.get(k, 0.0)
+        b = f2.get(k, 0.0)
+        denom = max(a, b, 1)
+        sim += (1 - abs(a - b) / denom) * ast_weights[k]
 
-    weighted_similarity = sum(
-        similarity_scores[key] * ast_weights[key] for key in ast_weights.keys()
-    )
-
-    return weighted_similarity
-
+    return float(sim)
 
 
+# ===============================
+# SAVE TXT
+# ===============================
 def save_similar_blocks_txt(similar_blocks_data, folder_path):
-    """Menyimpan hasil blok mirip ke file .txt."""
-    txt_path = os.path.join(folder_path, "blok_kode_mirip.txt")
-    with open(txt_path, "w", encoding="utf-8") as f:
+    path = os.path.join(folder_path, "blok_kode_mirip.txt")
+
+    with open(path, "w", encoding="utf-8") as f:
         for entry in similar_blocks_data:
             f.write(f"File A: {entry['file1']} | File B: {entry['file2']}\n")
+
             for block in entry["similar_blocks"]:
-                f.write(f"  - Jenis: {block[0]}, Similarity: {block[1]:.2f}\n")
-                f.write(f"    ↪ Potongan kode A: {block[2]}\n")
-                f.write(f"    ↪ Potongan kode B: {block[3]}\n\n")
-            f.write("-" * 50 + "\n")
-    print(f"File teks similaritas blok kode disimpan di: {txt_path}")
+                f.write(
+                    f"  - {block['type']} | "
+                    f"Score: {block['score']:.2f} | "
+                    f"Tingkat: {block['level']}\n"
+                )
+                f.write(f"    A: {block['snippet_a']}\n")
+                f.write(f"    B: {block['snippet_b']}\n\n")
+
+            f.write("-" * 60 + "\n")
 
 
+# ===============================
+# SAVE EXCEL
+# ===============================
 def save_similar_blocks_excel(similar_blocks_data, folder_path):
-    """Menyimpan hasil blok mirip ke file Excel."""
-    excel_path = os.path.join(folder_path, "blok_kode_mirip.xlsx")
+    path = os.path.join(folder_path, "blok_kode_mirip.xlsx")
     wb = Workbook()
     ws = wb.active
     ws.title = "Blok Mirip"
-    ws.append(["File A", "File B", "Jenis Blok", "Similarity", "Potongan Kode A", "Potongan Kode B"])
+
+    ws.append([
+        "File A", "File B",
+        "Jenis Blok", "Score", "Tingkat",
+        "Potongan A", "Potongan B"
+    ])
 
     for entry in similar_blocks_data:
         for block in entry["similar_blocks"]:
             ws.append([
                 entry["file1"],
                 entry["file2"],
-                block[0],
-                f"{block[1]:.2f}",
-                block[2],
-                block[3]
+                block["type"],
+                round(block["score"], 3),
+                block["level"],
+                block["snippet_a"],
+                block["snippet_b"],
             ])
 
-    wb.save(excel_path)
-    print(f"File Excel disimpan di: {excel_path}")
-
-
-def compare_all_files(folder_path, ast_weights=None, threshold=0.85):
-    """Membandingkan semua file Python dalam folder (tanpa GUI)."""
-    if ast_weights is None:
-        ast_weights = AST_WEIGHTS
-
-    if not folder_path or not os.path.exists(folder_path):
-        print("Folder tidak ditemukan.")
-        return
-
-    files = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith(".py")]
-    if len(files) < 2:
-        print("Tidak cukup file Python untuk dibandingkan (minimal 2 file).")
-        return
-
-    file_names = [os.path.basename(f) for f in files]
-    similarity_matrix = pd.DataFrame(index=file_names, columns=file_names, data=0.0)
-    similar_blocks_all = []
-
-    for i in range(len(files)):
-        for j in range(i, len(files)):
-            similarity = compute_similarity(files[i], files[j], ast_weights=ast_weights)
-            similarity_matrix.iloc[i, j] = similarity
-            similarity_matrix.iloc[j, i] = similarity
-
-            code1 = read_file(files[i])
-            code2 = read_file(files[j])
-            similar_parts = find_similar_blocks(
-                code1, code2,
-                threshold=threshold,
-                ast_weights=ast_weights
-            )
-            if similar_parts:
-                similar_blocks_all.append({
-                    "file1": os.path.basename(files[i]),
-                    "file2": os.path.basename(files[j]),
-                    "similar_blocks": similar_parts
-                })
-    # bagian bawah (save csv, txt, xlsx, heatmap) BIARKAN seperti semula
-
-
-
-# Hindari pemanggilan otomatis GUI saat diimpor Django
-if __name__ == "__main__":
-    folder = input("Masukkan path folder berisi file Python: ").strip()
-    compare_all_files(folder)
+    wb.save(path)

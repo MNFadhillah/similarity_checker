@@ -112,6 +112,56 @@
       {{ matrix|safe }}
     </div>
 
+
+    <!-- ==========================
+        TIER / REKOMENDASI BERDASARKAN THRESHOLD
+    =========================== -->
+    <hr>
+    <h3>Rekomendasi Tingkat Kemiripan</h3>
+
+    <div class="tier-header" style="margin-bottom:10px;">
+      <strong>Threshold saat ini:</strong> {{ threshold|floatformat:2 }}
+      <p style="font-size:13px; color:#555; margin-top:6px;">
+        Nilai kemiripan di bawah threshold dikategorikan sebagai <strong>Rendah</strong>.
+        Nilai di atas threshold dibagi menjadi <strong>Sedang</strong> dan <strong>Tinggi</strong>.
+      </p>
+    </div>
+
+    <div class="tier-legend" style="margin-bottom:12px;">
+      <span class="badge badge-low">Rendah (&lt; {{ threshold|floatformat:2 }})</span>
+      <span class="badge badge-mid">
+        Sedang ({{ threshold|floatformat:2 }} – {{ threshold|add:"0.125"|floatformat:2 }})
+      </span>
+      <span class="badge badge-high">
+        Tinggi (≥ {{ threshold|add:"0.125"|floatformat:2 }})
+      </span>
+    </div>
+
+
+    <table class="table table-striped" style="width:100%; margin-top:12px;">
+      <thead>
+        <tr>
+          <th>File A</th>
+          <th>File B</th>
+          <th style="width:110px;">Score</th>
+          <th style="width:120px;">Tingkat</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in display_pairs %}
+          <tr>
+            <td>{{ p.file_a }}</td>
+            <td>{{ p.file_b }}</td>
+            <td>{{ p.score|floatformat:2 }}</td>
+            <td><span class="badge {{ p.tier_class }}">{{ p.tier_label }}</span></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5">Tidak ada pasangan untuk ditampilkan.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+
     <div style="margin-top:30px;">
       <a href="{% url 'index' %}" class="btn-back">
         Kembali ke Halaman Utama
