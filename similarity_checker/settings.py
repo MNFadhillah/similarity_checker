@@ -20,18 +20,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ====== SECURITY & HOSTS ======
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key")
-DEBUG = False
 
-# (*) Saat pertama kali deploy, biarkan '*' dulu; setelah domain Railway muncul, ganti lebih spesifik.
-ALLOWED_HOSTS = ["pymatch.research-media.web.id",]
+DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
 
-# Tambah ini agar POST dari domain Railway lolos CSRF (set setelah domain diketahui)
-CSRF_TRUSTED_ORIGINS = [
-    "https://pymatch.research-media.web.id",
-]
+if DEBUG:
+    # Development (local)
+    ALLOWED_HOSTS = [
+        "127.0.0.1",
+        "localhost",
+    ]
+else:
+    # Production
+    ALLOWED_HOSTS = [
+        "pymatch.research-media.web.id",
+    ]
 
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
+# CSRF hanya wajib di production (HTTPS)
+if not DEBUG:
+    CSRF_TRUSTED_ORIGINS = [
+        "https://pymatch.research-media.web.id",
+    ]
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+
 
 # ====== APPS ======
 INSTALLED_APPS = [
