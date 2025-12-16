@@ -7,32 +7,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # ========================
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key")
+def get_env_list(name, default=None):
+    value = os.getenv(name)
+    if value:
+        return [v.strip() for v in value.split(",")]
+    return default or []
+
 
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
 
-# ========================
-# HOSTS
-# ========================
-if DEBUG:
-    ALLOWED_HOSTS = [
-        "127.0.0.1",
-        "localhost",
-    ]
-else:
-    ALLOWED_HOSTS = [
-        "pymatch.research-media.web.id",
-        "www.pymatch.research-media.web.id",
-    ]
+ALLOWED_HOSTS = get_env_list(
+    "DJANGO_ALLOWED_HOSTS",
+    ["127.0.0.1", "localhost"] if DEBUG else []
+)
 
-# ========================
-# CSRF & COOKIE SECURITY
-# ========================
+CSRF_TRUSTED_ORIGINS = get_env_list("CSRF_TRUSTED_ORIGINS")
+
 if not DEBUG:
-    CSRF_TRUSTED_ORIGINS = [
-        "https://pymatch.research-media.web.id",
-    ]
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
+
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
